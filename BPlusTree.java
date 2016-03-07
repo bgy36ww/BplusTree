@@ -8,7 +8,7 @@ import java.util.Map.Entry;
  */
 public class BPlusTree<K extends Comparable<K>, T> {
 
-	public IndexNode<K,T> root;
+	public Node<K,T> root;
 	public static final int D = 2;
         
 	/**
@@ -26,11 +26,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
                         i++;
                     }
                     if (i==ptr.keys.size()){
-                        ptr=(Node)ptr.children.get(i);
+                        ptr=(Node)((IndexNode)ptr).children.get(i);
                     }
                 }
                 
-		return (T)ptr.values.get(i);
+		return (T)((LeafNode)ptr).values.get(i);
 	}
 
 	/**
