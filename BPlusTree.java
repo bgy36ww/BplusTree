@@ -8,9 +8,9 @@ import java.util.Map.Entry;
  */
 public class BPlusTree<K extends Comparable<K>, T> {
 
-	public Node<K,T> root;
+	public IndexNode<K,T> root;
 	public static final int D = 2;
-
+        
 	/**
 	 * TODO Search the value for a specific key
 	 * 
@@ -18,7 +18,20 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return value
 	 */
 	public T search(K key) {
-		return null;
+                Node ptr= root;
+                IndexNode ptr2=root;
+                LeafNode ptr3;
+                while (!ptr.isLeafNode){
+                    int i=0;
+                    while ((i<ptr2.keys.size())&&(key.compareTo((K)ptr2.keys.get(i))>0)){
+                        i++;
+                    }
+                    if (i==ptr2.keys.size()){
+                        ptr=ptr2.children.get(i);
+                    }
+                }
+                
+		return ptr3.values.get(i);
 	}
 
 	/**
@@ -38,7 +51,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param leaf, any other relevant data
 	 * @return the key/node pair as an Entry
 	 */
-	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf, ...) {
+	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
 
 		return null;
 	}
@@ -50,7 +63,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param index, any other relevant data
 	 * @return new key/node pair as an Entry
 	 */
-	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index, ...) {
+	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
 
 		return null;
 	}
