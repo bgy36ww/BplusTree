@@ -19,19 +19,18 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 */
 	public T search(K key) {
                 Node ptr= root;
-                IndexNode ptr2=root;
-                LeafNode ptr3;
+                int i=0;
                 while (!ptr.isLeafNode){
-                    int i=0;
-                    while ((i<ptr2.keys.size())&&(key.compareTo((K)ptr2.keys.get(i))>0)){
+                    i=0;
+                    while ((i<ptr.keys.size())&&(key.compareTo((K)ptr.keys.get(i))>0)){
                         i++;
                     }
-                    if (i==ptr2.keys.size()){
-                        ptr=ptr2.children.get(i);
+                    if (i==ptr.keys.size()){
+                        ptr=(Node)ptr.children.get(i);
                     }
                 }
                 
-		return ptr3.values.get(i);
+		return (T)ptr.values.get(i);
 	}
 
 	/**
