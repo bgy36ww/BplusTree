@@ -1,5 +1,6 @@
 import java.util.AbstractMap;
 import java.util.Map.Entry;
+import java.util.ArrayList;
 
 /**
  * BPlusTree Class Assumptions: 1. No duplicate keys inserted 2. Order D:
@@ -40,7 +41,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param value
 	 */
 	public void insert(K key, T value) {
+            if (root==null){
+                ArrayList<K> insetlist= new ArrayList<K>();
+                ArrayList<T> insetlistv= new ArrayList<T>();
+                insetlist.add(key);
+                Node childnode=new LeafNode(insetlist,insetlistv);
+                ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
+                childlist.add(childnode);
+                root=new IndexNode(insetlist,childlist);
+            }
 
+            
 	}
 
 	/**
