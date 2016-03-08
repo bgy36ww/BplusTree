@@ -72,22 +72,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
             }
             
             else{
-                
-        //find the right position
+        //find the right position and insert
         //with recursive method
                 recinsert(key,value,root);
-                Node ptr=this.searchnode(key);
-                int i=this.getposition(key, ptr);
-        //insert node
-                ((LeafNode)ptr).insertSorted(key, value);
-        //check if splicting is needed        
-                if (ptr.isOverflowed()){
-                   Entry<K,Node> entry;
-                   entry=this.splitLeafNode((LeafNode)ptr);
-                   //linked two leaf node
-                   ((LeafNode)ptr).nextLeaf=(LeafNode)entry.getValue();
-                   ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)ptr);
-                }
             }
             
             
@@ -96,7 +83,25 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	}
         
         public void recinsert(K key, T value,Node N){
-            recinsert(key,value,N);
+            
+            int i=0;
+            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
+                i++;
+            }
+            if (!N.isLeafNode){
+                recinsert(key,value,(Node)((IndexNode)N).children.get(i));
+                if (N.isOverflowed()){
+                   Entry<K,Node> entry;
+                   entry=this.splitIndexNode((IndexNode)N);
+                }
+            }else {
+                   Entry<K,Node> entry;
+                   entry=this.splitLeafNode((LeafNode)N);
+                   ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
+                   ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
+            }
+            
+            
         }
 
 
