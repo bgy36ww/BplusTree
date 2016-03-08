@@ -72,7 +72,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
             }
             
             else{
+                
         //find the right position
+        //with recursive method
+                recinsert(key,value,root);
                 Node ptr=this.searchnode(key);
                 int i=this.getposition(key, ptr);
         //insert node
@@ -92,6 +95,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
             
 	}
         
+        public void recinsert(K key, T value,Node N){
+            recinsert(key,value,N);
+        }
 
 
 	/**
