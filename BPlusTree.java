@@ -19,21 +19,36 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return value
 	 */
 	public T search(K key) {
-                Node ptr= root;
+                Node ptr=this.searchnode(key);
+                int i=this.getposition(key, ptr);
+                
+                if (key!=ptr.keys.get(i)){
+                    return null;
+                }
+		return (T)((LeafNode)ptr).values.get(i);
+	}
+
+        public int getposition(K key,Node N)
+        {
                 int i=0;
+                while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
+                    i++;
+                }
+                return i;
+        }
+        
+        public Node searchnode(K key) {
+                Node ptr= root;
+                int i;
                 while (!ptr.isLeafNode){
                     i=0;
                     while ((i<ptr.keys.size())&&(key.compareTo((K)ptr.keys.get(i))>0)){
                         i++;
                     }
-                    if (i==ptr.keys.size()){
                         ptr=(Node)((IndexNode)ptr).children.get(i);
-                    }
                 }
-                
-		return (T)((LeafNode)ptr).values.get(i);
-	}
-
+            return ptr;
+        }
 	/**
 	 * TODO Insert a key/value pair into the BPlusTree
 	 * 
@@ -49,7 +64,12 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
                 childlist.add(childnode);
                 root=new IndexNode(insetlist,childlist);
+            }else{
+                Node ptr=this.searchnode(key);
+                int i=this.getposition(key, ptr);
+                
             }
+            
 
             
 	}
