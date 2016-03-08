@@ -19,15 +19,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return value
 	 */
 	public T search(K key) {
+        //find the exact leaf node
                 Node ptr=this.searchnode(key);
                 int i=this.getposition(key, ptr);
-                
+        //if no key were found
                 if (key!=ptr.keys.get(i)){
                     return null;
                 }
 		return (T)((LeafNode)ptr).values.get(i);
 	}
-
+        //get position of the key inside leaf node
         public int getposition(K key,Node N)
         {
                 int i=0;
@@ -36,10 +37,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 }
                 return i;
         }
-        
+        //find the node with key value key
         public Node searchnode(K key) {
                 Node ptr= root;
                 int i;
+        //recur through the node to find the matched node
                 while (!ptr.isLeafNode){
                     i=0;
                     while ((i<ptr.keys.size())&&(key.compareTo((K)ptr.keys.get(i))>0)){
@@ -56,23 +58,41 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param value
 	 */
 	public void insert(K key, T value) {
+        //Check if the root has been created or not.
             if (root==null){
+        //create root node and first leaf
                 ArrayList<K> insetlist= new ArrayList<K>();
                 ArrayList<T> insetlistv= new ArrayList<T>();
                 insetlist.add(key);
                 Node childnode=new LeafNode(insetlist,insetlistv);
                 ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
                 childlist.add(childnode);
+        //set up root node
                 root=new IndexNode(insetlist,childlist);
-            }else{
+            }
+            
+            else{
+        //find the right position
                 Node ptr=this.searchnode(key);
                 int i=this.getposition(key, ptr);
-                
+        //insert node
+                ((LeafNode)ptr).insertSorted(key, value);
+        //check if splicting is needed        
+                if (ptr.isOverflowed()){
+                   Entry<K,Node> entry;
+                   entry=this.splitLeafNode((LeafNode)ptr);
+                   //linked two leaf node
+                   ((LeafNode)ptr).nextLeaf=(LeafNode)entry.getValue();
+                   ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)ptr);
+                }
             }
+            
             
 
             
 	}
+        
+
 
 	/**
 	 * TODO Split a leaf node and return the new right node and the splitting
