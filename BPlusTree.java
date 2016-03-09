@@ -19,38 +19,39 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return value
 	 */
 	public T search(K key) {
-        //find the exact leaf node
-                Node ptr=this.searchnode(key);
-                int i=this.getposition(key, ptr);
-        //if no key were found
-                if (key!=ptr.keys.get(i)){
-                    return null;
-                }
-		return (T)((LeafNode)ptr).values.get(i);
-	}
-        //get position of the key inside leaf node
-        public int getposition(K key,Node N)
-        {
-                int i=0;
-                while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
-                    i++;
-                }
-                return i;
+		// Search from root
+        return tree_search(root, key);
+    }
+
+
+    public T tree_search(Node<K,T> startNode, K key) {
+        // If the starting node is a leafNode
+        if (startNode.isLeafNode) {
+        	// Get the position of the key in the list of keys
+        	position = startNode.keys.indexOf(key);
+        	// Get its value from the list of values.
+        	return startNode.values.get(position); 
         }
-        //find the node with key value key
-        public Node searchnode(K key) {
-                Node ptr= root;
-                int i;
-        //recur through the node to find the matched node
-                while (!ptr.isLeafNode){
-                    i=0;
-                    while ((i<ptr.keys.size())&&(key.compareTo((K)ptr.keys.get(i))>0)){
-                        i++;
-                    }
-                        ptr=(Node)((IndexNode)ptr).children.get(i);
-                }
-            return ptr;
+
+        // If not, find the right subtree to start the search.
+        else {
+        	// If the key is smaller than all of the keys in the current node, start searching from the leftmost child.
+        	if (key.compareTo(startNode.keys.get(0)) < 0) {
+        		tree_search(startNode.children.get(0), key);
+        	}
+        	// If the key is greater then all of the keys in the current node, start searching from the rightmost child.
+        	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
+        		tree_search(startNode.children.get(startNode.children.size() - 1), key);
+        	}
+        	// Else, find 
+        	else {
+
+        	}
         }
+    }
+
+
+
 	/**
 	 * TODO Insert a key/value pair into the BPlusTree
 	 * 
@@ -146,7 +147,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 	/**
 	 * TODO Split a leaf node and return the new right node and the splitting
-	 * key as an Entry<slitingKey, RightNode>
+	 * key as an Entry<splitingKey, RightNode>
 	 * 
 	 * @param leaf, any other relevant data
 	 * @return the key/node pair as an Entry
