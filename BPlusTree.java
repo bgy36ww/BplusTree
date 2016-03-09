@@ -90,14 +90,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
             }
             Entry<K,Node<K,T>> entry;
             if (!N.isLeafNode){
-
+            //recur through the node
                 entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i));
                 
                 if (entry!=null){
                 //find node and merge them
-                
+                //what should i be?
+                //may need to debug it later
+                    ((IndexNode)N).insertSorted(entry, i);
                 }
-                //3/8/2016
+                //check overflow and return
                 if (N.isOverflowed()){
 
                    entry=this.splitIndexNode((IndexNode)N);
