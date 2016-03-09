@@ -39,15 +39,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
         else {
         	// If the key is smaller than all of the keys in the current node, start searching from the leftmost child.
         	if (key.compareTo(startNode.keys.get(0)) < 0) {
-        		tree_search(startNode.children.get(0), key);
+        		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(0), key);
         	}
         	// If the key is greater then all of the keys in the current node, start searching from the rightmost child.
         	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
-        		tree_search(startNode.children.get(startNode.children.size() - 1), key);
+        		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
         	// Else, find 
         	else {
-
+        		
         	}
         }
     }
