@@ -52,19 +52,13 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 
 
-	/**
-	 * TODO Insert a key/value pair into the BPlusTree
-	 * 
-	 * @param key
-	 * @param value
-	 */
+
         //method create indexnode
-        public Node createInode(K key, T value){
+        public Node createInode(K key, Node lnode){
             ArrayList<K> insetlist= new ArrayList<K>();
             insetlist.add(key);
-            Node Children=this.createLnode(key, value);
             ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
-            childlist.add(Children);
+            childlist.add(lnode);
             Node newindexnode=new IndexNode(insetlist,childlist);
             return newindexnode;
         }
@@ -77,13 +71,20 @@ public class BPlusTree<K extends Comparable<K>, T> {
             Node childnode=new LeafNode(insetlist,insetlistv);
             return childnode;
         }
-        
+        /**
+	 * TODO Insert a key/value pair into the BPlusTree
+	 * 
+	 * @param key
+	 * @param value
+	 */
 	public void insert(K key, T value) {
         //Check if the root has been created or not.
             if (root==null){
         //create root node and first leaf
         //set up root node
-                root=this.createInode(key, value);
+                Node lnode=createLnode(key,value);
+                
+                root=this.createInode(key, lnode);
             }
             
             else{
@@ -125,8 +126,12 @@ public class BPlusTree<K extends Comparable<K>, T> {
                    }else
                    {
                        entry=this.splitIndexNode((IndexNode)N);
-                       Node newroot=this.createInode(entry.getKey(), (T)entry.getValue());
-                       
+                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), entry.getValue());
+                       //maybe I should do this according to the add format
+                       //need to revisit here and test.
+                       newroot.children.add(root);
+                       //is this wrong?
+                       root=newroot;
                        return null;
                    }
                 }
