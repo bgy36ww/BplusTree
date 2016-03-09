@@ -88,25 +88,22 @@ public T search(K key) {
                 Node lnode=createLnode(key,value);
                 root=lnode;
             }
-            
             else{
         //find the right position and insert
         //with recursive method
-                recinsert(key,value,root,0);
-            }
-            
-            
-
-            
+                recinsert(key,value,root,0);   
+            }            
 	}
         
         public Entry<K, Node<K,T>> recinsert(K key, T value, Node N, int depth){
             
             int i=0;
-            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
+            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
+                System.out.println(key+"compareto"+(K)N.keys.get(i)+"  result as "+(key.compareTo((K)N.keys.get(i))));
                 i++;
             }
-            i--;
+            if (N.isLeafNode){
+            i--;}
             Entry<K,Node<K,T>> entry;
             if (!N.isLeafNode){
             //recur through the node
@@ -127,10 +124,7 @@ public T search(K key) {
                        entry=this.splitIndexNode((IndexNode)N);
                        //
                        IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), root);
-                       //maybe I should do this according to the add format
-                       //need to revisit here and test.
                        newroot.children.add(entry.getValue());
-                       //is this wrong?
                        root=newroot;
                        return null;
                    }
@@ -139,10 +133,18 @@ public T search(K key) {
             }else {
                    ((LeafNode)N).insertSorted(key, value);
                    if (N.isOverflowed()){
-                   entry=this.splitLeafNode((LeafNode)N);
-                   ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
-                   ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
-                   return entry;
+                   if (depth!=0){
+                        entry=this.splitLeafNode((LeafNode)N);
+                   }
+                   else{
+                       entry=this.splitLeafNode((LeafNode)N);
+                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), root);
+                       newroot.children.add(entry.getValue());
+                       root=newroot;
+                   }
+                        ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
+                        ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
+                        return entry;
                    }
             }
             
@@ -159,13 +161,14 @@ public T search(K key) {
 	 */
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
             int n=leaf.keys.size();
-            LeafNode nLeaf=new LeafNode(leaf.keys.subList(D/2+1, n-1),leaf.values.subList(D/2+1, n-1));
-            System.out.println(n);
-            K tkey=leaf.keys.get(D/2);
-            for (int i=D/2;i<n-1;i++){
-            leaf.keys.remove(i);
-            leaf.values.remove(i);
+            LeafNode nLeaf=new LeafNode(leaf.keys.subList(D, n),leaf.values.subList(D, n));
+
+            K tkey=leaf.keys.get(D);
+            for (int i=D;i<n;i++){
+            leaf.keys.remove(D);
+            leaf.values.remove(D);
             }
+            //System.out.println(tkey);
             Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nLeaf);
             return reentry;
 	}
@@ -179,10 +182,10 @@ public T search(K key) {
 	 */
 	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
             int n=index.keys.size();
-            IndexNode nindex=new IndexNode(index.keys.subList(D/2, n-1),index.children.subList(D/2, n-1));
-
-            K tkey=index.keys.get(D/2);
-            for (int i=D/2;i<n;i++){
+            IndexNode nindex=new IndexNode(index.keys.subList(D+1, n),index.children.subList(D+1, n));
+            System.out.println(nindex.keys);
+            K tkey=index.keys.get(D);
+            for (int i=D;i<n;i++){
             index.keys.remove(i);
             index.children.remove(i);
             }
