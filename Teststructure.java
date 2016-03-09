@@ -24,7 +24,7 @@ public class Teststructure {
         BT.insert(2, "5");
         BT.insert(3, "7");
         BT.insert(4, "8");
-        System.out.println(BT.search(2));
+        System.out.println(((LeafNode)((IndexNode)(BT.root)).children.get(1)).keys);
    
     }    
 }
