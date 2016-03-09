@@ -1,4 +1,4 @@
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -57,6 +57,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
         		}
         	}
         }
+        return null;
     }
 
 
@@ -167,16 +168,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the key/node pair as an Entry
 	 */
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
-            LeafNode nLeaf=new LeafNode;
             int n=leaf.keys.size();
+            LeafNode nLeaf=new LeafNode(leaf.keys.subList(D/2, n-1),leaf.values.subList(D/2, n-1));
+
             K tkey=leaf.keys.get(D/2);
-            nLeaf.keys.addAll(leaf.keys.subList(D/2, n-1));
-            nLeaf.values.addAll(leaf.values.subList(D/2, n-1));
-            for (int i=D/2,i<n,i++){
+            for (int i=D/2;i<n;i++){
             leaf.keys.remove(i);
             leaf.values.remove(i);
-                }
-            Entry<K, Node<K,T>> reentry=Entry<tkey,nLeaf>;
+            }
+            Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nLeaf);
             return reentry;
 	}
 
