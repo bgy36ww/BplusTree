@@ -22,6 +22,9 @@ public class Teststructure {
         BT.insert(0, "2");
         BT.insert(1, "4");
         BT.insert(2, "5");
+        BT.insert(3, "7");
+        BT.insert(4, "8");
+        System.out.println(BT.search(2));
    
     }    
 }
