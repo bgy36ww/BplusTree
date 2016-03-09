@@ -125,7 +125,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                    }else
                    {
                        entry=this.splitIndexNode((IndexNode)N);
-                       Node newroot=new IndexNode();
+                       Node newroot=this.createInode(entry.getKey(), (T)entry.getValue());
                        
                        return null;
                    }
