@@ -12,14 +12,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 	public Node<K,T> root;
 	public static final int D = 2;
-        
-	/**
-	 * TODO Search the value for a specific key
-	 * 
-	 * @param key
-	 * @return value
-	 */
-	public T search(K key) {
+public T search(K key) {
 		// Search from root
         return tree_search(root, key);
     }
@@ -61,6 +54,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 
 
+
         //method create indexnode
         public Node createInode(K key, Node lnode){
             ArrayList<K> insetlist= new ArrayList<K>();
@@ -76,6 +70,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             ArrayList<K> insetlist= new ArrayList<K>();
             ArrayList<T> insetlistv= new ArrayList<T>();
             insetlist.add(key);
+            insetlistv.add(value);
             Node childnode=new LeafNode(insetlist,insetlistv);
             return childnode;
         }
@@ -91,7 +86,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
         //create root node and first leaf
         //set up root node
                 Node lnode=createLnode(key,value);
-                root=this.createInode(key, lnode);
+                root=lnode;
             }
             
             else{
@@ -108,7 +103,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
         public Entry<K, Node<K,T>> recinsert(K key, T value, Node N, int depth){
             
             int i=0;
-            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
+            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
                 i++;
             }
             i--;
@@ -118,10 +113,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i),depth+1);
                 
                 if (entry!=null){
-                //find node and merge them
-                //what should i be?
-                //may need to debug it later
-                //May need to conside about the root node
                     ((IndexNode)N).insertSorted(entry, i);
                 }
                 //check overflow and return
@@ -168,8 +159,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 */
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
             int n=leaf.keys.size();
-            LeafNode nLeaf=new LeafNode(leaf.keys.subList(D/2, n-1),leaf.values.subList(D/2, n-1));
-
+            LeafNode nLeaf=new LeafNode(leaf.keys.subList(D/2+1, n-1),leaf.values.subList(D/2+1, n-1));
+            System.out.println(n);
             K tkey=leaf.keys.get(D/2);
             for (int i=D/2;i<n-1;i++){
             leaf.keys.remove(i);
