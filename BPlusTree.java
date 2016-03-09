@@ -57,24 +57,38 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param key
 	 * @param value
 	 */
+        //method create indexnode
+        public Node createInode(K key, T value){
+            ArrayList<K> insetlist= new ArrayList<K>();
+            insetlist.add(key);
+            Node Children=this.createLnode(key, value);
+            ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
+            childlist.add(Children);
+            Node newindexnode=new IndexNode(insetlist,childlist);
+            return newindexnode;
+        }
+        //create leafnode function
+        //should I change the Node into more specific type?
+        public Node createLnode(K key, T value){
+            ArrayList<K> insetlist= new ArrayList<K>();
+            ArrayList<T> insetlistv= new ArrayList<T>();
+            insetlist.add(key);
+            Node childnode=new LeafNode(insetlist,insetlistv);
+            return childnode;
+        }
+        
 	public void insert(K key, T value) {
         //Check if the root has been created or not.
             if (root==null){
         //create root node and first leaf
-                ArrayList<K> insetlist= new ArrayList<K>();
-                ArrayList<T> insetlistv= new ArrayList<T>();
-                insetlist.add(key);
-                Node childnode=new LeafNode(insetlist,insetlistv);
-                ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
-                childlist.add(childnode);
         //set up root node
-                root=new IndexNode(insetlist,childlist);
+                root=this.createInode(key, value);
             }
             
             else{
         //find the right position and insert
         //with recursive method
-                recinsert(key,value,root);
+                recinsert(key,value,root,0);
             }
             
             
@@ -82,7 +96,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             
 	}
         
-        public Entry<K, Node<K,T>> recinsert(K key, T value, Node N){
+        public Entry<K, Node<K,T>> recinsert(K key, T value, Node N, int depth){
             
             int i=0;
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
@@ -91,21 +105,29 @@ public class BPlusTree<K extends Comparable<K>, T> {
             Entry<K,Node<K,T>> entry;
             if (!N.isLeafNode){
             //recur through the node
-                entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i));
+                entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i),depth+1);
                 
                 if (entry!=null){
                 //find node and merge them
                 //what should i be?
                 //may need to debug it later
+                //May need to conside about the root node
                     ((IndexNode)N).insertSorted(entry, i);
                 }
                 //check overflow and return
                 if (N.isOverflowed()){
 
+                   if (depth!=0){
                    entry=this.splitIndexNode((IndexNode)N);
-                   entry.getKey();
+
                    return entry;
-                   
+                   }else
+                   {
+                       entry=this.splitIndexNode((IndexNode)N);
+                       Node newroot=new IndexNode();
+                       
+                       return null;
+                   }
                 }
              
             }else {
