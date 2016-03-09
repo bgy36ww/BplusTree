@@ -24,7 +24,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
         return tree_search(root, key);
     }
 
-
     public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
@@ -33,9 +32,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
         	int position = startNode.keys.indexOf(key);
         	// Get its value from the list of values.
         	return (T)((LeafNode)startNode).values.get(position);  // Corrected 3/9/16
-
         }
-
+        
         // If not, find the right subtree to start the search.
         else {
         	// If the key is smaller than all of the keys in the current node, start searching from the leftmost child.
@@ -43,7 +41,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(0), key);
         	}
         	// If the key is greater then all of the keys in the current node, start searching from the rightmost child.
-        	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
+        	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) >= 0) {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
         	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i).
@@ -51,12 +49,13 @@ public class BPlusTree<K extends Comparable<K>, T> {
         		ListIterator<K> iterator = ((IndexNode)startNode).keys.listIterator();
         		while (iterator.hasNext()) {
         			if (iterator.next().compareTo(key) > 0) {
-        				int position = iterator.previousIndex();
+        				int position = iterator.previousIndex() + 1;
         				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
         			}
         		}
         	}
         }
+        return null;
     }
 
 
