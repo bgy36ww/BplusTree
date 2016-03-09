@@ -5,8 +5,9 @@ import java.util.Map.Entry;
 public class IndexNode<K extends Comparable<K>, T> extends Node<K,T> {
 
 	// m nodes
-	protected ArrayList<Node<K,T>> children; // m+1 children
-
+	
+        protected ArrayList<Node<K,T>> children; // m+1 children
+        
 	public IndexNode(K key, Node<K,T> child0, Node<K,T> child1) {
 		isLeafNode = false;
 		keys = new ArrayList<K>();

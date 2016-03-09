@@ -160,8 +160,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the key/node pair as an Entry
 	 */
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
-
-		return null;
+            LeafNode nLeaf=new LeafNode;
+            int n=leaf.keys.size();
+            K tkey=leaf.keys.get(D/2);
+            nLeaf.keys.addAll(leaf.keys.subList(D/2, n-1));
+            nLeaf.values.addAll(leaf.values.subList(D/2, n-1));
+            for (int i=D/2,i<n,i++){
+            leaf.keys.remove(i);
+            leaf.values.remove(i);
+                }
+            Entry<K, Node<K,T>> reentry=Entry<tkey,nLeaf>;
+            return reentry;
 	}
 
 	/**

@@ -3,9 +3,10 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class LeafNode<K extends Comparable<K>, T> extends Node<K, T> {
-	protected ArrayList<T> values;
+
   protected LeafNode<K,T> nextLeaf;
   protected LeafNode<K,T> previousLeaf;
+  protected ArrayList<T> values;
 
 	public LeafNode(K firstKey, T firstValue) {
 		isLeafNode = true;
