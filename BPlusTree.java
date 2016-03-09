@@ -82,36 +82,41 @@ public class BPlusTree<K extends Comparable<K>, T> {
             
 	}
         
-        public boolean recinsert(K key, T value,Node N){
+        public Entry<K, Node<K,T>> recinsert(K key, T value, Node N){
             
             int i=0;
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
                 i++;
             }
+            Entry<K,Node<K,T>> entry;
             if (!N.isLeafNode){
-                if (recinsert(key,value,(Node)((IndexNode)N).children.get(i))){
+
+                entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i));
+                
+                if (entry!=null){
                 //find node and merge them
+                
                 }
                 //3/8/2016
                 if (N.isOverflowed()){
-                   Entry<K,Node> entry;
-                   entry=this.splitIndexNode((IndexNode)N,subkey);
+
+                   entry=this.splitIndexNode((IndexNode)N);
                    entry.getKey();
-                   entry.getValue();
-                   return true;
+                   return entry;
                    
                 }
+             
             }else {
                    ((LeafNode)N).insertSorted(key, value);
                    if (N.isOverflowed()){
-                   Entry<K,Node> entry;
                    entry=this.splitLeafNode((LeafNode)N);
                    ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
                    ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
+                   return entry;
                    }
             }
             
-            
+            return null;
         }
 
 
@@ -134,7 +139,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param index, any other relevant data
 	 * @return new key/node pair as an Entry
 	 */
-	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index, K key) {
+	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
 
 		return null;
 	}
