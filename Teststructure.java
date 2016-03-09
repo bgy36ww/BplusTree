@@ -17,6 +17,11 @@ public class Teststructure {
         Node tt=new LeafNode(i,k);
         System.out.println(((LeafNode)tt).values);
     
-    
+        BPlusTree BT=new BPlusTree();
+        String value="2";
+        BT.insert(0, "2");
+        BT.insert(1, "4");
+        BT.insert(2, "5");
+   
     }    
 }

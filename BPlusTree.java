@@ -113,6 +113,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
                 i++;
             }
+            i--;
             Entry<K,Node<K,T>> entry;
             if (!N.isLeafNode){
             //recur through the node
@@ -172,7 +173,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             LeafNode nLeaf=new LeafNode(leaf.keys.subList(D/2, n-1),leaf.values.subList(D/2, n-1));
 
             K tkey=leaf.keys.get(D/2);
-            for (int i=D/2;i<n;i++){
+            for (int i=D/2;i<n-1;i++){
             leaf.keys.remove(i);
             leaf.values.remove(i);
             }
@@ -188,8 +189,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return new key/node pair as an Entry
 	 */
 	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
+            int n=index.keys.size();
+            IndexNode nindex=new IndexNode(index.keys.subList(D/2, n-1),index.children.subList(D/2, n-1));
 
-		return null;
+            K tkey=index.keys.get(D/2);
+            for (int i=D/2;i<n;i++){
+            index.keys.remove(i);
+            index.children.remove(i);
+            }
+            Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nindex);
+            return reentry;
 	}
 
 	/**
