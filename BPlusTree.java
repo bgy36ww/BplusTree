@@ -1,6 +1,7 @@
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * BPlusTree Class Assumptions: 1. No duplicate keys inserted 2. Order D:
@@ -45,9 +46,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
         	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
-        	// Else, find 
+        	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i).
         	else {
-        		
+        		ListIterator<K> iterator = ((IndexNode)startNode).keys.listIterator();
+        		while (iterator.hasNext()) {
+        			if (iterator.next().compareTo(key) > 0) {
+        				int position = iterator.previousIndex();
+        				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
+        			}
+        		}
         	}
         }
     }
