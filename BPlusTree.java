@@ -28,10 +28,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
         	// Get the position of the key in the list of keys
+<<<<<<< Updated upstream
                 
         	int position = startNode.keys.indexOf(key);
         	// Get its value from the list of values.
         	return (T)((LeafNode)startNode).values.get(position); 
+=======
+        	int position = startNode.keys.indexOf(key);
+        	// Get its value from the list of values.
+        	return (T)((LeafNode)startNode).values.get(position);  // Corrected 3/9/16
+>>>>>>> Stashed changes
         }
 
         // If not, find the right subtree to start the search.
