@@ -27,7 +27,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
     public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
-        	// Get the position of the key in the list of keys
+        	// Get tshe position of the key in the list of keys
 
         	int position = startNode.keys.indexOf(key);
         	// Get its value from the list of values.
@@ -39,15 +39,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
         else {
         	// If the key is smaller than all of the keys in the current node, start searching from the leftmost child.
         	if (key.compareTo(startNode.keys.get(0)) < 0) {
-        		tree_search(startNode.children.get(0), key);
+        		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(0), key);
         	}
         	// If the key is greater then all of the keys in the current node, start searching from the rightmost child.
         	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
-        		tree_search(startNode.children.get(startNode.children.size() - 1), key);
+        		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
         	// Else, find 
         	else {
-
+        		
         	}
         }
     }
