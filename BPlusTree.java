@@ -85,7 +85,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
         //create root node and first leaf
         //set up root node
                 Node lnode=createLnode(key,value);
-                
                 root=this.createInode(key, lnode);
             }
             
@@ -128,10 +127,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
                    }else
                    {
                        entry=this.splitIndexNode((IndexNode)N);
-                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), entry.getValue());
+                       //
+                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), root);
                        //maybe I should do this according to the add format
                        //need to revisit here and test.
-                       newroot.children.add(root);
+                       newroot.children.add(entry.getValue());
                        //is this wrong?
                        root=newroot;
                        return null;
