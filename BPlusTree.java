@@ -184,6 +184,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			leaf.keys.remove(D);
 			leaf.values.remove(D);
 		}
+		leaf.nextLeaf.previousLeaf = right;
+		right.nextLeaf = leaf.nextLeaf;
+		leaf.nextLeaf = right;
+		right.previousLeaf = leaf;
 		Entry<K, Node<K,T>> pushed_entry = new SimpleEntry<K,Node<K,T>>(pushed_key, right);
 		return pushed_entry;
 	}
