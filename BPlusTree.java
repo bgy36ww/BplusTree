@@ -97,6 +97,7 @@ public T search(K key) {
         
         public Entry<K, Node<K,T>> recinsert(K key, T value, Node N, int depth){
             
+            //find position
             int i=0;
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
                 System.out.println(key+"compareto"+(K)N.keys.get(i)+"  result as "+(key.compareTo((K)N.keys.get(i))));
