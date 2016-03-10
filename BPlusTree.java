@@ -1,4 +1,4 @@
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -28,10 +28,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
         	// Get the position of the key in the list of keys
-
         	int position = startNode.keys.indexOf(key);
         	// Get its value from the list of values.
-        	return (T)((LeafNode)startNode).values.get(position);  // Corrected 3/9/16
+        	return (T)((LeafNode)startNode).values.get(position); 
         }
         
         // If not, find the right subtree to start the search.
@@ -52,7 +51,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
         				int position = iterator.previousIndex() + 1;
         				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
         			}
-        		return null;
         		}
         	}
         }
@@ -90,6 +88,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				while (iterator.hasNext()) {
 					if (iterator.next().compareTo(key) > 0) {
 						insert_position = iterator.previousIndex() + 1;
+						break;
 					}
 				}	
 				
@@ -111,7 +110,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
 						ListIterator<K> key_iterator = startNode.keys.listIterator();
 						while (key_iterator.hasNext()) {
 							if (key_iterator.next().compareTo(index_key) > 0) 
-								startNode.keys.add(key_iterator.previousIndex(), index_key);	
+								startNode.keys.add(key_iterator.previousIndex(), index_key);
+								break;
 						}
 					}
 					// Now, check whether the starting index node has overflowed.
@@ -157,8 +157,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the key/node pair as an Entry
 	 */
 	public Entry<K, Node<K,T>> splitLeafNode(LeafNode<K,T> leaf) {
-
-		return null;
+		int n = leaf.keys.size();
+		LeafNode right = new LeafNode(leaf.keys.subList(D, n),leaf.values.subList(D, n));
+		K pushed_key = leaf.keys.get(D);
+		for (int i = D; i < n; i++) {
+			leaf.keys.remove(D);
+			leaf.values.remove(D);
+		}
+		Entry<K, Node<K,T>> pushed_entry = new SimpleEntry<K,Node<K,T>>(pushed_key, right);
+		return pushed_entry;
 	}
 
 	/**
@@ -169,8 +176,18 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return new key/node pair as an Entry
 	 */
 	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
-
-		return null;
+		int n = index.keys.size();
+		int m = n + 1;
+		IndexNode right = new IndexNode(index.keys.subList(D+1, n),index.children.subList(D+1, m));
+		K pushed_key = index.keys.get(D);
+		for (int i = D; i < n; i++) {
+            index.keys.remove(D);
+            }
+		for (int i = D+1; i < m; i++){
+            index.children.remove(D+1);
+            }
+		Entry<K, Node<K,T>> pushed_entry = new SimpleEntry<K,Node<K,T>>(pushed_key, right);
+		return pushed_entry;
 	}
 
 	/**
