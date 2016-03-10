@@ -28,7 +28,7 @@ public class Teststructure {
         BT.insert(10, "14");
         BT.insert(11, "15");
         BT.insert(12, "16");
-        System.out.println(BT.search(1));
+        System.out.println(BT.search(11));
         Utils.printTree(BT);
    
     }    
