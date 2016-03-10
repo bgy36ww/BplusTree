@@ -195,8 +195,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param key
 	 */
 	public void delete(K key) {
-            
+              
               recdelete(key,root);
+              if (root.keys.size()==0){
+              	root=root.children.get(0);
+              }
 	}
         
         public boolean recdelete(K key, Node N){
@@ -207,8 +210,39 @@ public class BPlusTree<K extends Comparable<K>, T> {
             
             if ((N.isLeafNode)&&(key.compareTo((K)N.keys.get(i))==0)){
             //found node to delete
+            N.keys.remove(i);
+            N.values.remove(i);
+            
+
+            }else{
+            	if (recdelete(key, N.children.get(i))){
+            		Node Secnode;
+            		Node Node1=null;
+            		Node Node2=null;
+            		int size1=-1;
+            		int size2=-1;
+            		if (i>0){
+            			Node1=N.children.get(i-1);
+            			size1=Node1.keys.size();
+            		}
+            		if (i<N.keys.size()-1){
+            			Node2=N.children.get(i+1);
+            			size2=Node2.keys.size();
+            		}
+            		Secnode=size1>size2?Node1:Node2;
+            		if (N.children.get(i).isLeafNode){
+            			int pos=-1;
+            			pos=this.handleLeafNodeUnderflow(N.children.get(i),Secnode,N);
+            		}
+            		else{
+            			int pos=-1;
+            			pos=this.handleIndexNodeUnderflow(N.children.get(i),Secnode,N);
+            		}
+            		
+            		
+            	}
             }
-            return false;
+            return N.isUnderflowed();
         }
 
 	/**
@@ -223,6 +257,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the splitkey position in parent if merged so that parent can
 	 *         delete the splitkey later on. -1 otherwise
 	 */
+
 	public int handleLeafNodeUnderflow(LeafNode<K,T> left, LeafNode<K,T> right,
 			IndexNode<K,T> parent) {
 		return -1;
