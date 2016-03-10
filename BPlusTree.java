@@ -68,15 +68,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
 		if (root == null) {
 			root = new LeafNode(key, value);
 		}
-		// Insert from root using the recursive method
-		tree_insert(root, key, value);
+		else
+			// Insert from root using the recursive method
+			tree_insert(root, key, value);
 		return;
 	}
 	
 	public Entry<K, Node<K,T>> tree_insert(Node<K,T> startNode, K key, T value) {
 		// If we are trying to insert starting from an index node
 		if (!startNode.isLeafNode) {
-			
+
 			// Find the index i in the list of keys such that K(i) <= key < K(i+1)
 			ListIterator<K> iterator = startNode.keys.listIterator();
 			int insert_position = -1;
@@ -90,58 +91,75 @@ public class BPlusTree<K extends Comparable<K>, T> {
 						insert_position = iterator.previousIndex() + 1;
 						break;
 					}
-				}	
-				
-				// Insert starting from that child node. 
-				Entry<K, Node<K,T>> indexToInsert = tree_insert((Node<K,T>)((IndexNode)startNode).children.get(insert_position), key, value);
-				// If there are no index node coming form the bottom to insert, then we're done.
-				if (indexToInsert == null) 
-					return null;
-				// Else, we need to recursively insert the index node coming from the bottom to the current index node.
-				else {
-					K index_key = indexToInsert.getKey();
-					// Find the position to insert the key and insert it.
-					int index_insert_position;
-					if (index_key.compareTo(startNode.keys.get(0)) < 0) 
-						startNode.keys.add(0, index_key);
-					else if (index_key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0)
-						startNode.keys.add(index_key);
-					else {
-						ListIterator<K> key_iterator = startNode.keys.listIterator();
-						while (key_iterator.hasNext()) {
-							if (key_iterator.next().compareTo(index_key) > 0) 
-								startNode.keys.add(key_iterator.previousIndex(), index_key);
-								break;
-						}
-					}
-					// Now, check whether the starting index node has overflowed.
-					if (!startNode.isOverflowed()) return null;
-					else {
-						// If it has overflowed, check whether the start node is the root node.
-						if (startNode != root)
-							// If not, just split the start node and return the index node to be pushed up.
-							return splitIndexNode((IndexNode)startNode);
-						else {
-							// If it is the root node, split it and set the new index node to be the new root node.
-							Entry<K, Node<K,T>> split_result = splitIndexNode((IndexNode)startNode);
-							Node<K,T> right_child = split_result.getValue();
-							K root_key = split_result.getKey();
-							Node<K,T> new_root = new IndexNode(root_key, startNode, right_child);
-							return null;
-						}
-					}
-				}		
+				}
 			}
-			return null;
+			// Insert starting from that child node. 
+			Entry<K, Node<K,T>> indexToInsert = tree_insert((Node<K,T>)((IndexNode)startNode).children.get(insert_position), key, value);
+			// If there are no index node coming form the bottom to insert, then we're done.
+			if (indexToInsert == null) 
+				return null;
+			// Else, we need to recursively insert the index node coming from the bottom to the current index node.
+			else {
+				K index_key = indexToInsert.getKey();
+				Node<K,T> index_childNode = indexToInsert.getValue();
+				// Find the position to insert the key and insert it.
+				if (index_key.compareTo(startNode.keys.get(0)) < 0) {
+					startNode.keys.add(0, index_key);
+					((IndexNode)startNode).children.add(1, index_childNode);
+				}
+				else if (index_key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0) {
+					startNode.keys.add(index_key);
+					((IndexNode)startNode).children.add(index_childNode);
+				}
+				else {
+					ListIterator<K> key_iterator = startNode.keys.listIterator();
+					while (key_iterator.hasNext()) {
+						if (key_iterator.next().compareTo(index_key) > 0) {					
+							startNode.keys.add(key_iterator.previousIndex(), index_key);
+							((IndexNode)startNode).children.add(key_iterator.previousIndex() + 1, index_childNode);
+							break;
+						}
+					}
+				}
+				// Now, check whether the starting index node has overflowed.
+				if (!startNode.isOverflowed()) return null;
+				else {
+					// If it has overflowed, check whether the start node is the root node.
+					if (startNode != root)
+						// If not, just split the start node and return the index node to be pushed up.
+						return splitIndexNode((IndexNode)startNode);
+					else {
+						// If it is the root node, split it and set the new index node to be the new root node.
+						Entry<K, Node<K,T>> split_result = splitIndexNode((IndexNode)startNode);
+						Node<K,T> right_child = split_result.getValue();
+						K root_key = split_result.getKey();
+						Node<K,T> new_root = new IndexNode(root_key, startNode, right_child);
+						root = new_root;
+						return null;
+					}
+				}
+			}		
 		}
-		
+			
 		// If we are inserting directly into a leaf node
 		else {
 			((LeafNode)startNode).insertSorted(key, value);
 			// Check if the node is overflowed. 
-			if (startNode.isOverflowed()) 
-				//If it is, split the leaf node and return the index node to push upwards. 
-				return splitLeafNode((LeafNode)startNode);							
+			if (startNode.isOverflowed()) {
+				//If it is, check whether the start node is the root node.
+				if (startNode != root) {
+					return splitLeafNode((LeafNode)startNode);	
+				}
+				else {
+					// If it is the root node, split it and set the new index node to be the new root node.
+					Entry<K, Node<K,T>> split_result = splitLeafNode((LeafNode)startNode);
+					Node<K,T> right_child = split_result.getValue();
+					K root_key = split_result.getKey();
+					Node<K,T> new_root = new IndexNode(root_key, startNode, right_child);
+					root = new_root;
+					return null;
+				}
+			}
 			// If the node is not overflowed, return null and we're done.
 			else return null;
 		}
