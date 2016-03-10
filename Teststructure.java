@@ -30,8 +30,16 @@ public class Teststructure {
         BT.insert(10, "14");
         BT.insert(11, "15");
         BT.insert(12, "16");
-        
-        System.out.println(((IndexNode)((IndexNode)(BT.root)).children.get(1)).keys);
+        System.out.println(BT.root.keys);
+        BT.search(30);
+        System.out.println(((IndexNode)((IndexNode)BT.root).children.get(0)).keys);  
+        BT.delete(0);
+        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(1)).keys);
+        BT.delete(1);
+        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(0)).keys);
+        BT.delete(2);
+        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(0)).keys);
+
    
     }    
 }
