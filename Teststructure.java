@@ -12,34 +12,10 @@ public class Teststructure {
     
 
     public static void main(String[] args) {
-        int i=0;
-        int k=0;
-        Node tt=new LeafNode(i,k);
     
         BPlusTree BT=new BPlusTree();
-        BT.insert(0, "2");
-        BT.insert(1, "4");
-        BT.insert(2, "5");
-        BT.insert(3, "7");
-        BT.insert(4, "8");
-        BT.insert(5, "9");   
-        BT.insert(6, "10");
-        BT.insert(7, "11");
-        BT.insert(8, "12");
-        BT.insert(9, "13");
-        BT.insert(10, "14");
-        BT.insert(11, "15");
-        BT.insert(12, "16");
-        System.out.println(BT.root.keys);
-        BT.search(30);
-        System.out.println(((IndexNode)((IndexNode)BT.root).children.get(0)).keys);  
-        BT.delete(0);
-        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(1)).keys);
-        BT.delete(1);
-        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(0)).keys);
-        BT.delete(2);
-        System.out.println(((LeafNode)((IndexNode)BT.root).children.get(0)).keys);
-
-   
+        Tests t1=new Tests();
+        t1.testSimpleHybrid();
+        
     }    
 }
