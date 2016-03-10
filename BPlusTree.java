@@ -12,10 +12,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 	public Node<K,T> root;
 	public static final int D = 2;
-public T search(K key) {
+	public T search(K key) {
 		// Search from root
         return tree_search(root, key);
     }
+
 
     public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
@@ -37,14 +38,15 @@ public T search(K key) {
         	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) >= 0) {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
-        	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i).
+        	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i+1).
         	else {
-        		ListIterator<K> iterator = ((IndexNode)startNode).keys.listIterator();
+        		ListIterator<K> iterator = startNode.keys.listIterator();
         		while (iterator.hasNext()) {
         			if (iterator.next().compareTo(key) > 0) {
         				int position = iterator.previousIndex() + 1;
         				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
         			}
+        		return null;
         		}
         	}
         }
@@ -54,26 +56,6 @@ public T search(K key) {
 
 
 
-
-        //method create indexnode
-        public Node createInode(K key, Node lnode){
-            ArrayList<K> insetlist= new ArrayList<K>();
-            insetlist.add(key);
-            ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
-            childlist.add(lnode);
-            Node newindexnode=new IndexNode(insetlist,childlist);
-            return newindexnode;
-        }
-        //create leafnode function
-        //should I change the Node into more specific type?
-        public Node createLnode(K key, T value){
-            ArrayList<K> insetlist= new ArrayList<K>();
-            ArrayList<T> insetlistv= new ArrayList<T>();
-            insetlist.add(key);
-            insetlistv.add(value);
-            Node childnode=new LeafNode(insetlist,insetlistv);
-            return childnode;
-        }
         /**
 	 * TODO Insert a key/value pair into the BPlusTree
 	 * 
@@ -85,7 +67,7 @@ public T search(K key) {
             if (root==null){
         //create root node and first leaf
         //set up root node
-                Node lnode=createLnode(key,value);
+                Node lnode=new LeafNode(key,value);
                 root=lnode;
             }
             else{
@@ -99,8 +81,7 @@ public T search(K key) {
             
             //find position
             int i=0;
-            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
-                System.out.println(key+"compareto"+(K)N.keys.get(i)+"  result as "+(key.compareTo((K)N.keys.get(i))));
+            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
                 i++;
             }
             if (N.isLeafNode){
@@ -117,15 +98,18 @@ public T search(K key) {
                 if (N.isOverflowed()){
 
                    if (depth!=0){
+
                    entry=this.splitIndexNode((IndexNode)N);
 
                    return entry;
                    }else
                    {
+
                        entry=this.splitIndexNode((IndexNode)N);
                        //
-                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), root);
-                       newroot.children.add(entry.getValue());
+
+                       IndexNode newroot=new IndexNode(entry.getKey(), root, entry.getValue());
+
                        root=newroot;
                        return null;
                    }
@@ -139,12 +123,10 @@ public T search(K key) {
                    }
                    else{
                        entry=this.splitLeafNode((LeafNode)N);
-                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), root);
-                       newroot.children.add(entry.getValue());
+                       IndexNode newroot=new IndexNode(entry.getKey(), root, entry.getValue());
                        root=newroot;
                    }
-                        ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
-                        ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
+
                         return entry;
                    }
             }
@@ -169,7 +151,9 @@ public T search(K key) {
             leaf.keys.remove(D);
             leaf.values.remove(D);
             }
-            //System.out.println(tkey);
+            leaf.nextLeaf=nLeaf;
+            nLeaf.previousLeaf=leaf;
+
             Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nLeaf);
             return reentry;
 	}
@@ -184,8 +168,8 @@ public T search(K key) {
 	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
             int n=index.keys.size();
             int m=index.children.size();
+ 
             IndexNode nindex=new IndexNode(index.keys.subList(D+1, n),index.children.subList(D+1, m));
-            System.out.println(nindex.keys);
             K tkey=index.keys.get(D);
             for (int i=D;i<n;i++){
             index.keys.remove(D);
@@ -194,6 +178,7 @@ public T search(K key) {
             index.children.remove(D+1);
             }
             Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nindex);
+
             return reentry;
 	}
 
@@ -203,8 +188,19 @@ public T search(K key) {
 	 * @param key
 	 */
 	public void delete(K key) {
-
+              recdelete(key,root);
 	}
+        
+        public boolean recdelete(K key, Node N){
+            int i=0;
+            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
+                i++;
+            }
+            if ((N.isLeafNode)&&(key.compareTo((K)N.keys.get(i))==0)){
+                
+            }
+            return false;
+        }
 
 	/**
 	 * TODO Handle LeafNode Underflow (merge or redistribution)
