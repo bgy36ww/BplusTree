@@ -12,17 +12,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
 	public Node<K,T> root;
 	public static final int D = 2;
-	public T search(K key) {
+        public T search(K key) {
 		// Search from root
         return tree_search(root, key);
-    }
+         }
 
-    public T tree_search(Node<K,T> startNode, K key) {
+         public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
-        	System.out.println("Leaf");
         	// Get the position of the key in the list of keys
         	int position = startNode.keys.indexOf(key);
+        	if (position == -1) return null;
         	// Get its value from the list of values.
         	return (T)((LeafNode)startNode).values.get(position); 
         }
@@ -206,12 +206,14 @@ public class BPlusTree<K extends Comparable<K>, T> {
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
                 i++;
             }
-            
-            if ((N.isLeafNode)&&(key.compareTo((K)N.keys.get(i))==0)){
+ 
+            if (N.isLeafNode){
+            i--;
+            if (key.compareTo((K)N.keys.get(i))==0){
             //found node to delete
             N.keys.remove(i);
             ((LeafNode)N).values.remove(i);
-            
+            }
 
             }else{
             	if (recdelete(key, ((Node)((IndexNode)N).children.get(i)))){
@@ -316,7 +318,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	public int handleIndexNodeUnderflow(IndexNode<K,T> left,
 			IndexNode<K,T> right, IndexNode<K,T> parent, int pos) {
 		int l1=left.keys.size();
-		int l2=right.keys.size();
+                int l2=0;
+                if (right!=null){
+		l2=right.keys.size();}
 		int p1=parent.keys.size();
 		if (l1+l2<2*D){
 			parent.children.remove(pos+1);
@@ -329,8 +333,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				left.children.add(right.children.get(0));
 				right.children.remove(0);
 			}
+                        if (l2>0){
 			left.children.add(right.children.get(0));
-			right.children.remove(0);
+			right.children.remove(0);}
 			
 			right=null;
 		}else{
