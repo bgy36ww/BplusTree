@@ -198,7 +198,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
               
               recdelete(key,root);
               if (root.keys.size()==0){
-              	root=root.children.get(0);
+              	root=(Node)((IndexNode)root).children.get(0);
               }
 	}
         
