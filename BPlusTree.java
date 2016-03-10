@@ -151,9 +151,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
             leaf.keys.remove(D);
             leaf.values.remove(D);
             }
+            if (leaf.nextLeaf != null) {
+            leaf.nextLeaf.previousLeaf = nLeaf;
+            nLeaf.nextLeaf = leaf.nextLeaf;
+            leaf.nextLeaf = nLeaf;
+            nLeaf.previousLeaf = leaf;
+            }
+            else {
             leaf.nextLeaf=nLeaf;
             nLeaf.previousLeaf=leaf;
-
+            }
             Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nLeaf);
             return reentry;
 	}
@@ -188,6 +195,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param key
 	 */
 	public void delete(K key) {
+            
               recdelete(key,root);
 	}
         
@@ -196,8 +204,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
                 i++;
             }
+            
             if ((N.isLeafNode)&&(key.compareTo((K)N.keys.get(i))==0)){
-                
+            //found node to delete
             }
             return false;
         }
