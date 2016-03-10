@@ -17,15 +17,14 @@ public class BPlusTree<K extends Comparable<K>, T> {
         return tree_search(root, key);
     }
 
-
     public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
+        	System.out.println("Leaf");
         	// Get the position of the key in the list of keys
-
         	int position = startNode.keys.indexOf(key);
         	// Get its value from the list of values.
-        	return (T)((LeafNode)startNode).values.get(position);  // Corrected 3/9/16
+        	return (T)((LeafNode)startNode).values.get(position); 
         }
         
         // If not, find the right subtree to start the search.
@@ -43,15 +42,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
         		ListIterator<K> iterator = startNode.keys.listIterator();
         		while (iterator.hasNext()) {
         			if (iterator.next().compareTo(key) > 0) {
-        				int position = iterator.previousIndex() + 1;
+        				int position = iterator.previousIndex();
         				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
         			}
-        		return null;
         		}
         	}
         }
         return null;
     }
+
 
 
 
