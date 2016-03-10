@@ -232,11 +232,21 @@ public class BPlusTree<K extends Comparable<K>, T> {
             		Secnode=size1>size2?Node1:Node2;
             		if (N.children.get(i).isLeafNode){
             			int pos=-1;
-            			pos=this.handleLeafNodeUnderflow(N.children.get(i),Secnode,N);
-            		}
+            			if (size1>size2){
+            			pos=this.handleLeafNodeUnderflow(Secnode,N.children.get(i),N,i);
+            			}else{
+            			pos=this.handleLeafNodeUnderflow(N.children.get(i),Secnode,N,i);
+            			}
+            			
+            				
+            			}
             		else{
             			int pos=-1;
-            			pos=this.handleIndexNodeUnderflow(N.children.get(i),Secnode,N);
+            			if (size1>size2){
+            			pos=this.handleIndexNodeUnderflow(Secnode,N.children.get(i),N,i);
+            			}else{
+            			pos=this.handleIndexNodeUnderflow(N.children.get(i),Secnode,N,i);
+            			}
             		}
             		
             		
@@ -259,7 +269,35 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 */
 
 	public int handleLeafNodeUnderflow(LeafNode<K,T> left, LeafNode<K,T> right,
-			IndexNode<K,T> parent) {
+			IndexNode<K,T> parent, int pos) {
+		
+		int l1=left.values.size();
+		int l2=right.values.size();
+		int p1=parent.keys.size();
+		if (l1+l2<2N){
+			parent.children.remove(pos+1);
+			int tkey=parent.keys.get(pos);
+			parent.keys.remove(pos);
+			for (int i=0;i<l2;i++){
+				left.keys.add(right.keys.get(0));
+				right.keys.remove(0);
+				left.values.add(right.values.get(0));
+				right.values.remove(0);
+			}
+			left.nextLeaf=right.nextLeaf;
+			right=null;
+		}else{
+			int numtomove=N-l1;
+			for (int i=0;i<numtomove;i++){
+				left.keys.add(right.keys.get(0));
+				right.keys.remove(0);
+				left.values.add(right.values.get(0));
+				right.values.remove(0);
+			}
+			parent.keys.remove(pos);
+			parent.keys.add(pos,right.keys.get(0));
+		}
+		
 		return -1;
 
 	}
@@ -277,7 +315,41 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 *         delete the splitkey later on. -1 otherwise
 	 */
 	public int handleIndexNodeUnderflow(IndexNode<K,T> leftIndex,
-			IndexNode<K,T> rightIndex, IndexNode<K,T> parent) {
+			IndexNode<K,T> rightIndex, IndexNode<K,T> parent, int pos) {
+		int l1=left.keys.size();
+		int l2=right.keys.size();
+		int p1=parent.keys.size();
+		if (l1+l2<2N){
+			parent.children.remove(pos+1);
+			int tkey=parent.keys.get(pos);
+			parent.keys.remove(pos);
+			left.keys.add(tkey);
+			for (int i=0;i<l2;i++){
+				left.keys.add(right.keys.get(0));
+				right.keys.remove(0);
+				left.children.add(right.children.get(0));
+				right.children.remove(0);
+			}
+			left.children.add(right.children.get(0));
+			right.children.remove(0);
+			
+			right=null;
+		}else{
+			int numtomove=N-l1;
+			left.keys.add(parent.keys.get(pos));
+			
+			
+			for (int i=0;i<numtomove;i++){
+				left.keys.add(right.keys.get(0));
+				right.keys.remove(0);
+				left.children.add(right.children.get(0));
+				right.children.remove(0);
+			}
+			parent.keys.remove(pos);
+			parent.keys.add(pos,right.keys.get(0));
+		}
+		
+		
 		return -1;
 	}
 
