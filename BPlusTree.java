@@ -44,119 +44,110 @@ public class BPlusTree<K extends Comparable<K>, T> {
         	else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) >= 0) {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(((IndexNode)startNode).children.size() - 1), key);
         	}
-        	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i).
+        	// Else, find the index i in the list of keys such that K(i) <= key < K(i+1), then search from children(i+1).
         	else {
-        		ListIterator<K> iterator = ((IndexNode)startNode).keys.listIterator();
+        		ListIterator<K> iterator = startNode.keys.listIterator();
         		while (iterator.hasNext()) {
         			if (iterator.next().compareTo(key) > 0) {
         				int position = iterator.previousIndex() + 1;
         				return tree_search((Node<K,T>)((IndexNode)startNode).children.get(position), key);
         			}
+        		return null;
         		}
         	}
         }
         return null;
     }
 
-
-
-
-        //method create indexnode
-        public Node createInode(K key, Node lnode){
-            ArrayList<K> insetlist= new ArrayList<K>();
-            insetlist.add(key);
-            ArrayList<Node<K,T>> childlist=new ArrayList<Node<K,T>>();
-            childlist.add(lnode);
-            Node newindexnode=new IndexNode(insetlist,childlist);
-            return newindexnode;
-        }
-        //create leafnode function
-        //should I change the Node into more specific type?
-        public Node createLnode(K key, T value){
-            ArrayList<K> insetlist= new ArrayList<K>();
-            ArrayList<T> insetlistv= new ArrayList<T>();
-            insetlist.add(key);
-            Node childnode=new LeafNode(insetlist,insetlistv);
-            return childnode;
-        }
-        /**
+    /**
 	 * TODO Insert a key/value pair into the BPlusTree
 	 * 
 	 * @param key
 	 * @param value
 	 */
 	public void insert(K key, T value) {
-        //Check if the root has been created or not.
-            if (root==null){
-        //create root node and first leaf
-        //set up root node
-                Node lnode=createLnode(key,value);
-                
-                root=this.createInode(key, lnode);
-            }
-            
-            else{
-        //find the right position and insert
-        //with recursive method
-                recinsert(key,value,root,0);
-            }
-            
-            
-
-            
+		// If root does not exist, create a leaf node containing the key and the value.
+		if (root == null) {
+			root = new LeafNode(key, value);
+		}
+		// Insert from root using the recursive method
+		tree_insert(root, key, value);
+		return;
 	}
+	
+	public Entry<K, Node<K,T>> tree_insert(Node<K,T> startNode, K key, T value) {
+		// If we are trying to insert starting from an index node
+		if (!startNode.isLeafNode) {
+			
+			// Find the index i in the list of keys such that K(i) <= key < K(i+1)
+			ListIterator<K> iterator = startNode.keys.listIterator();
+			int insert_position = -1;
+			if (key.compareTo(startNode.keys.get(0)) < 0) 
+				insert_position = 0;
+			else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) >= 0) 
+				insert_position = startNode.keys.size();
+			else {
+				while (iterator.hasNext()) {
+					if (iterator.next().compareTo(key) > 0) {
+						insert_position = iterator.previousIndex() + 1;
+					}
+				}	
+				
+				// Insert starting from that child node. 
+				Entry<K, Node<K,T>> indexToInsert = tree_insert((Node<K,T>)((IndexNode)startNode).children.get(insert_position), key, value);
+				// If there are no index node coming form the bottom to insert, then we're done.
+				if (indexToInsert == null) 
+					return null;
+				// Else, we need to recursively insert the index node coming from the bottom to the current index node.
+				else {
+					K index_key = indexToInsert.getKey();
+					// Find the position to insert the key and insert it.
+					int index_insert_position;
+					if (index_key.compareTo(startNode.keys.get(0)) < 0) 
+						startNode.keys.add(0, index_key);
+					else if (index_key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) > 0)
+						startNode.keys.add(index_key);
+					else {
+						ListIterator<K> key_iterator = startNode.keys.listIterator();
+						while (key_iterator.hasNext()) {
+							if (key_iterator.next().compareTo(index_key) > 0) 
+								startNode.keys.add(key_iterator.previousIndex(), index_key);	
+						}
+					}
+					// Now, check whether the starting index node has overflowed.
+					if (!startNode.isOverflowed()) return null;
+					else {
+						// If it has overflowed, check whether the start node is the root node.
+						if (startNode != root)
+							// If not, just split the start node and return the index node to be pushed up.
+							return splitIndexNode((IndexNode)startNode);
+						else {
+							// If it is the root node, split it and set the new index node to be the new root node.
+							Entry<K, Node<K,T>> split_result = splitIndexNode((IndexNode)startNode);
+							Node<K,T> right_child = split_result.getValue();
+							K root_key = split_result.getKey();
+							Node<K,T> new_root = new IndexNode(root_key, startNode, right_child);
+							return null;
+						}
+					}
+				}		
+			}
+			return null;
+		}
+		
+		// If we are inserting directly into a leaf node
+		else {
+			((LeafNode)startNode).insertSorted(key, value);
+			// Check if the node is overflowed. 
+			if (startNode.isOverflowed()) 
+				//If it is, split the leaf node and return the index node to push upwards. 
+				return splitLeafNode((LeafNode)startNode);							
+			// If the node is not overflowed, return null and we're done.
+			else return null;
+		}
+	}
+	
         
-        public Entry<K, Node<K,T>> recinsert(K key, T value, Node N, int depth){
-            
-            int i=0;
-            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>0)){
-                i++;
-            }
-            Entry<K,Node<K,T>> entry;
-            if (!N.isLeafNode){
-            //recur through the node
-                entry=recinsert(key,value,(Node)((IndexNode)N).children.get(i),depth+1);
-                
-                if (entry!=null){
-                //find node and merge them
-                //what should i be?
-                //may need to debug it later
-                //May need to conside about the root node
-                    ((IndexNode)N).insertSorted(entry, i);
-                }
-                //check overflow and return
-                if (N.isOverflowed()){
-
-                   if (depth!=0){
-                   entry=this.splitIndexNode((IndexNode)N);
-
-                   return entry;
-                   }else
-                   {
-                       entry=this.splitIndexNode((IndexNode)N);
-                       IndexNode newroot=(IndexNode)this.createInode(entry.getKey(), entry.getValue());
-                       //maybe I should do this according to the add format
-                       //need to revisit here and test.
-                       newroot.children.add(root);
-                       //is this wrong?
-                       root=newroot;
-                       return null;
-                   }
-                }
-             
-            }else {
-                   ((LeafNode)N).insertSorted(key, value);
-                   if (N.isOverflowed()){
-                   entry=this.splitLeafNode((LeafNode)N);
-                   ((LeafNode)N).nextLeaf=(LeafNode)entry.getValue();
-                   ((LeafNode)entry.getValue()).previousLeaf=((LeafNode)N);
-                   return entry;
-                   }
-            }
-            
-            return null;
-        }
-
 
 	/**
 	 * TODO Split a leaf node and return the new right node and the splitting
