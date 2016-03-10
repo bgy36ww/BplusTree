@@ -36,7 +36,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
         
         // If not, find the right subtree to start the search.
         else {
-        	System.out.println("Index");
         	// If the key is smaller than all of the keys in the current node, start searching from the leftmost child.
         	if (key.compareTo(startNode.keys.get(0)) < 0) {
         		return tree_search((Node<K,T>)((IndexNode)startNode).children.get(0), key);
