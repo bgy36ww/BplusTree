@@ -183,12 +183,15 @@ public T search(K key) {
 	 */
 	public Entry<K, Node<K,T>> splitIndexNode(IndexNode<K,T> index) {
             int n=index.keys.size();
-            IndexNode nindex=new IndexNode(index.keys.subList(D+1, n),index.children.subList(D+1, n));
+            int m=index.children.size();
+            IndexNode nindex=new IndexNode(index.keys.subList(D+1, n),index.children.subList(D+1, m));
             System.out.println(nindex.keys);
             K tkey=index.keys.get(D);
             for (int i=D;i<n;i++){
-            index.keys.remove(i);
-            index.children.remove(i);
+            index.keys.remove(D);
+            }
+            for (int i=D+1;i<m;i++){
+            index.children.remove(D+1);
             }
             Entry<K, Node<K,T>> reentry=new SimpleEntry<K,Node<K,T>>(tkey,nindex);
             return reentry;
