@@ -27,9 +27,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
     public T tree_search(Node<K,T> startNode, K key) {
         // If the starting node is a leafNode
         if (startNode.isLeafNode) {
-        	System.out.println("Leaf");
         	// Get the position of the key in the list of keys
         	int position = startNode.keys.indexOf(key);
+        	if (position == -1) return null;
         	// Get its value from the list of values.
         	return (T)((LeafNode)startNode).values.get(position); 
         }
@@ -226,7 +226,45 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @param key
 	 */
 	public void delete(K key) {
-
+		// If there is only one key left, just set root to null.
+		if (root.isLeafNode && root.keys.size() == 1) {
+			root = null;
+		}
+		else {
+			tree_delete(root, key);
+			return;
+		}
+	}
+	
+	public int tree_delete(Node<K,T> startNode, K key) {
+		// If we are deleting from an IndexNode
+		if (!startNode.isLeafNode) {
+			// Find the index i in the list of keys such that K(i) <= key < K(i+1)
+			ListIterator<K> iterator = startNode.keys.listIterator();
+			int delete_position = -1;
+			if (key.compareTo(startNode.keys.get(0)) < 0) 
+				delete_position = 0;
+			else if (key.compareTo(startNode.keys.get(startNode.keys.size() - 1)) >= 0) 
+				delete_position = startNode.keys.size();
+			else {
+				while (iterator.hasNext()) {
+					if (iterator.next().compareTo(key) > 0) {
+						delete_position = iterator.previousIndex() + 1;
+						break;
+					}
+				}
+			}
+			// Delete the key recursively starting at the child which has index delete_position.
+			int grandchild_deleted = tree_delete((Node<K,T>)((IndexNode)startNode).children.get(delete_position), key);
+			
+			// If a merge in its grandchildren does not happen, we're done. 
+			if (grandchild_deleted == -1) return -1;
+			else {
+				// If there is a merge in its grandchildren, check if its children has underflow.
+				
+			
+			}
+		}
 	}
 
 	/**
