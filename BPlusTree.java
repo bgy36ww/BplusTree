@@ -211,31 +211,31 @@ public class BPlusTree<K extends Comparable<K>, T> {
             if ((N.isLeafNode)&&(key.compareTo((K)N.keys.get(i))==0)){
             //found node to delete
             N.keys.remove(i);
-            N.values.remove(i);
+            ((LeafNode)N).values.remove(i);
             
 
             }else{
-            	if (recdelete(key, N.children.get(i))){
+            	if (recdelete(key, ((Node)((IndexNode)N).children.get(i)))){
             		Node Secnode;
             		Node Node1=null;
             		Node Node2=null;
             		int size1=-1;
             		int size2=-1;
             		if (i>0){
-            			Node1=N.children.get(i-1);
+            			Node1=((Node)((IndexNode)N).children.get(i-1));
             			size1=Node1.keys.size();
             		}
             		if (i<N.keys.size()-1){
-            			Node2=N.children.get(i+1);
+            			Node2=((Node)((IndexNode)N).children.get(i+1));
             			size2=Node2.keys.size();
             		}
             		Secnode=size1>size2?Node1:Node2;
-            		if (N.children.get(i).isLeafNode){
+            		if (((Node)(((IndexNode)N).children.get(i))).isLeafNode){
             			int pos=-1;
             			if (size1>size2){
-            			pos=this.handleLeafNodeUnderflow(Secnode,N.children.get(i),N,i);
+            			pos=this.handleLeafNodeUnderflow((LeafNode)Secnode,(LeafNode)(((IndexNode)N).children.get(i)),(IndexNode)N,i);
             			}else{
-            			pos=this.handleLeafNodeUnderflow(N.children.get(i),Secnode,N,i);
+            			pos=this.handleLeafNodeUnderflow((LeafNode)(((IndexNode)N).children.get(i)),(LeafNode)Secnode,(IndexNode)N,i);
             			}
             			
             				
@@ -243,9 +243,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
             		else{
             			int pos=-1;
             			if (size1>size2){
-            			pos=this.handleIndexNodeUnderflow(Secnode,N.children.get(i),N,i);
+            			pos=this.handleIndexNodeUnderflow((IndexNode)Secnode,(IndexNode)(((IndexNode)N).children.get(i)),(IndexNode)N,i);
             			}else{
-            			pos=this.handleIndexNodeUnderflow(N.children.get(i),Secnode,N,i);
+            			pos=this.handleIndexNodeUnderflow((IndexNode)(((IndexNode)N).children.get(i)),(IndexNode)Secnode,(IndexNode)N,i);
             			}
             		}
             		
@@ -274,9 +274,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 		int l1=left.values.size();
 		int l2=right.values.size();
 		int p1=parent.keys.size();
-		if (l1+l2<2N){
+		if (l1+l2<2*D){
 			parent.children.remove(pos+1);
-			int tkey=parent.keys.get(pos);
+			K tkey=parent.keys.get(pos);
 			parent.keys.remove(pos);
 			for (int i=0;i<l2;i++){
 				left.keys.add(right.keys.get(0));
@@ -287,7 +287,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			left.nextLeaf=right.nextLeaf;
 			right=null;
 		}else{
-			int numtomove=N-l1;
+			int numtomove=D-l1;
 			for (int i=0;i<numtomove;i++){
 				left.keys.add(right.keys.get(0));
 				right.keys.remove(0);
@@ -314,14 +314,14 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the splitkey position in parent if merged so that parent can
 	 *         delete the splitkey later on. -1 otherwise
 	 */
-	public int handleIndexNodeUnderflow(IndexNode<K,T> leftIndex,
-			IndexNode<K,T> rightIndex, IndexNode<K,T> parent, int pos) {
+	public int handleIndexNodeUnderflow(IndexNode<K,T> left,
+			IndexNode<K,T> right, IndexNode<K,T> parent, int pos) {
 		int l1=left.keys.size();
 		int l2=right.keys.size();
 		int p1=parent.keys.size();
-		if (l1+l2<2N){
+		if (l1+l2<2*D){
 			parent.children.remove(pos+1);
-			int tkey=parent.keys.get(pos);
+			K tkey=parent.keys.get(pos);
 			parent.keys.remove(pos);
 			left.keys.add(tkey);
 			for (int i=0;i<l2;i++){
@@ -335,7 +335,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			
 			right=null;
 		}else{
-			int numtomove=N-l1;
+			int numtomove=D-l1;
 			left.keys.add(parent.keys.get(pos));
 			
 			
