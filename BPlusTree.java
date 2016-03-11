@@ -236,9 +236,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
 		}
 	}
 	
-	public int tree_delete(Node<K,T> startNode, K key) {
+	public boolean tree_delete(Node<K,T> startNode, K key) {
+		// If we are deleting from a LeafNode
+		if (startNode.isLeafNode) {
+			// Search for the key and delete the key and the value from their lists respectively.
+			int position = startNode.keys.indexOf(key);
+			startNode.keys.remove(position);
+			((LeafNode)startNode).values.remove(position);
+		}
+		
 		// If we are deleting from an IndexNode
-		if (!startNode.isLeafNode) {
+		else {
 			// Find the index i in the list of keys such that K(i) <= key < K(i+1)
 			ListIterator<K> iterator = startNode.keys.listIterator();
 			int delete_position = -1;
@@ -254,17 +262,54 @@ public class BPlusTree<K extends Comparable<K>, T> {
 					}
 				}
 			}
-			// Delete the key recursively starting at the child which has index delete_position.
-			int grandchild_deleted = tree_delete((Node<K,T>)((IndexNode)startNode).children.get(delete_position), key);
-			
-			// If a merge in its grandchildren does not happen, we're done. 
-			if (grandchild_deleted == -1) return -1;
-			else {
-				// If there is a merge in its grandchildren, check if its children has underflow.
+			// We need to deal with situations where the child node is underflowed after deletion.
+			if (tree_delete((Node<K,T>)((IndexNode)startNode).children.get(delete_position), key)) {
+				// Check the siblings of the underflowed child and handle the underflow with the fullest sibling.
+				Node<K,T> leftForBalance = null;
+				Node<K,T> rightForBalance = null;
+				int size_left = -1;
+				int size_right = -1;
 				
-			
+				if (delete_position == 0)
+					rightForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position + 1);
+				else if (delete_position == startNode.keys.size() - 1)
+					leftForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position - 1);
+				else {
+					rightForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position + 1);
+					leftForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position - 1);
+				}
+				if (rightForBalance != null)
+					size_right = rightForBalance.keys.size();
+				if (leftForBalance != null)
+					size_left = leftForBalance.keys.size();
+				
+				// Compare and use the fullest sibling next to it.
+				if (((Node<K,T>)((IndexNode)startNode).children.get(delete_position)).isLeafNode) {
+					int merge_splitkey = -1;
+					if (size_left > size_right) 
+						merge_splitkey = handleLeafNodeUnderflow((LeafNode)((IndexNode)startNode).children.get(delete_position), (LeafNode)leftForBalance, (IndexNode)startNode);
+					else 
+						merge_splitkey = handleLeafNodeUnderflow((LeafNode)((IndexNode)startNode).children.get(delete_position), (LeafNode)rightForBalance, (IndexNode)startNode);
+					// If a merge has happened rather than a redistribution, we need to delete the splitkey and the pointer to its left in the startNode.
+					if (merge_splitkey != -1) {
+						startNode.keys.remove(merge_splitkey);
+						((IndexNode)startNode).children.remove(merge_splitkey);
+					}
+				}
+				else {
+					int merge_splitkey = -1;
+					if (size_left > size_right)
+						merge_splitkey = handleIndexNodeUnderflow((IndexNode)((IndexNode)startNode).children.get(delete_position), (IndexNode)leftForBalance, (IndexNode)startNode);
+					else
+						merge_splitkey = handleIndexNodeUnderflow((IndexNode)((IndexNode)startNode).children.get(delete_position), (IndexNode)rightForBalance, (IndexNode)startNode);
+					if (merge_splitkey != -1) {
+						startNode.keys.remove(merge_splitkey);
+						((IndexNode)startNode).children.remove(merge_splitkey);
+					}
+				}
 			}
 		}
+		return startNode.isUnderflowed();
 	}
 
 	/**
@@ -281,10 +326,65 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 */
 	public int handleLeafNodeUnderflow(LeafNode<K,T> left, LeafNode<K,T> right,
 			IndexNode<K,T> parent) {
-		return -1;
-
+		// Get the size of the nodes.
+		int left_size = left.keys.size();
+		int right_size = right.keys.size();
+		
+		// See if the size of the right node is large enough for redistribution.
+		if (left_size + right_size >= 2 * D) {
+			// We need to know which node is to the left in the tree.
+			if (right.keys.get(0).compareTo(left.keys.get(0)) > 0) {
+				int index = parent.keys.indexOf(right.keys.get(0));
+				for (int i = 0; i < (D - left_size); i++) {
+					left.keys.add(right.keys.get(0));
+					right.keys.remove(0);
+					left.values.add(right.values.get(0));
+					right.values.remove(0);
+				}
+				parent.keys.remove(index);
+				parent.keys.add(index, right.keys.get(0));
+				return -1;
+			}
+			else {
+				int index = parent.keys.indexOf(left.keys.get(0));
+				for (int i = 0; i < (D - left_size); i++) {
+					left.keys.add(0, right.keys.get(right.keys.size() - 1));
+					right.keys.remove(right.keys.size() - 1);
+					left.values.add(right.values.get(right.keys.size() - 1));
+					right.values.remove(right.keys.size() - 1);
+				}
+				parent.keys.remove(index);
+				parent.keys.add(index, left.keys.get(0));
+				return -1;
+			}			
+		}
+		// If redistribution is not possible, we need to merge the two nodes. Here we need to know the which node is to the left in the tree.
+		else {
+			if (right.keys.get(0).compareTo(left.keys.get(0)) > 0) {
+				for (int i = 0; i < right_size; i++) {
+					left.keys.add(right.keys.get(i));
+					left.values.add(right.values.get(i));
+				}
+				// Set the previous and next pointers.
+				right.nextLeaf.previousLeaf = left;
+				left.nextLeaf = right.nextLeaf;
+				// Return the index of the key corresponding to the first key in the node to the right.
+				int index = parent.keys.indexOf(right.keys.get(0));
+				return index;
+			}
+			else {
+				for (int i = 0; i < left_size; i++) {
+					right.keys.add(left.keys.get(i));
+					right.values.add(left.values.get(i));
+				}
+				left.nextLeaf.previousLeaf = right;
+				right.nextLeaf = left.nextLeaf;
+				int index = parent.keys.indexOf(left.keys.get(0));
+				return index;
+			}			
+		}
 	}
-
+		
 	/**
 	 * TODO Handle IndexNode Underflow (merge or redistribution)
 	 * 
@@ -299,7 +399,101 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 */
 	public int handleIndexNodeUnderflow(IndexNode<K,T> leftIndex,
 			IndexNode<K,T> rightIndex, IndexNode<K,T> parent) {
-		return -1;
+		// Get the size of the nodes.
+		int left_size = leftIndex.keys.size();
+		int right_size = rightIndex.keys.size();
+		int parent_size = parent.keys.size();
+		
+		// See if a redistribution is possible.
+		if (left_size + right_size >= 2 * D) {
+			if (rightIndex.keys.get(0).compareTo(leftIndex.keys.get(0)) > 0) {
+				// First we need to find the index of the largest key that is smaller than the first key in the node to the right.
+				int index = -1;
+				for (int i = 0; i < parent_size; i++) {
+					if (parent.keys.get(i).compareTo(rightIndex.keys.get(0)) > 0) {
+						index = i - 1;
+						break;
+					}
+				}
+				if (index == -1) index = parent_size - 1;
+				// Add that key in the parent node to the child node to the left.
+				leftIndex.keys.add(parent.keys.get(index));
+				// Add keys in the right child node to the left child node.
+				for (int i = 0; i < (D - left_size - 1); i++) {
+					leftIndex.keys.add(rightIndex.keys.get(0));
+					rightIndex.keys.remove(0);
+					leftIndex.children.add(rightIndex.children.get(0));
+					rightIndex.children.remove(0);
+				}
+				leftIndex.children.add(rightIndex.children.get(0));
+				parent.keys.remove(index);
+				parent.keys.add(index, rightIndex.keys.get(0));
+				rightIndex.keys.remove(0);
+				rightIndex.children.remove(0);
+				return -1;
+			}
+			else {
+				int index = -1;
+				for (int i = 0; i < parent_size; i++) {
+					if (parent.keys.get(i).compareTo(leftIndex.keys.get(0)) > 0) {
+						index = i - 1;
+						break;
+					}
+				}
+				if (index == -1) index = parent_size - 1;
+				leftIndex.keys.add(0, parent.keys.get(index));
+				for (int i = 0; i < (D - left_size - 1); i++) {
+					leftIndex.keys.add(0, rightIndex.keys.get(rightIndex.keys.size() - 1));
+					rightIndex.keys.remove(rightIndex.keys.size() - 1);
+					leftIndex.children.add(0, rightIndex.children.get(rightIndex.children.size() - 1));
+					rightIndex.children.remove(rightIndex.children.size() - 1);
+				}
+				leftIndex.children.add(0, rightIndex.children.get(rightIndex.children.size() - 1));
+				parent.keys.remove(index);
+				parent.keys.add(index, rightIndex.keys.get(rightIndex.keys.size() - 1));
+				rightIndex.keys.remove(rightIndex.keys.size() - 1);
+				rightIndex.children.remove(rightIndex.children.size() - 1);
+				return -1;
+			}
+		}
+		else {
+			// If a redistribution is not possible, we need to merge the two IndexNodes.
+			if (rightIndex.keys.get(0).compareTo(leftIndex.keys.get(0)) > 0) {
+				// First we need to find the index of the largest key that is smaller than the first key in the node to the right.
+				int index = -1;
+				for (int i = 0; i < parent_size; i++) {
+					if (parent.keys.get(i).compareTo(rightIndex.keys.get(0)) > 0) {
+						index = i - 1;
+						break;
+					}
+				}
+				if (index == -1) index = parent_size - 1;
+				// Then we need to add that key into the child node to the left.
+				leftIndex.keys.add(parent.keys.get(index));
+				// Then, add all the keys in the right child node to the left child node for merging.
+				for (int j = 0; j < right_size; j++) {
+					leftIndex.keys.add(rightIndex.keys.get(j));
+					leftIndex.children.add(rightIndex.children.get(j));
+				}
+				return index;
+			}
+			else {
+				int index = -1;
+				for (int i = 0; i < parent_size; i++) {
+					if (parent.keys.get(i).compareTo(leftIndex.keys.get(0)) > 0) {
+						index = i - 1;
+						break;
+					}
+				}
+				if (index == -1) index = parent_size - 1;
+				rightIndex.keys.add(parent.keys.get(index));
+				for (int j = 0; j < left_size; j++) {
+					rightIndex.keys.add(leftIndex.keys.get(j));
+					rightIndex.children.add(leftIndex.children.get(j));
+				}
+				return index;
+			}
+		}		
 	}
 
 }
