@@ -237,8 +237,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	}
 	
 	public boolean tree_delete(Node<K,T> startNode, K key) {
+		Utils.printTree(this);
 		// If we are deleting from a LeafNode
 		if (startNode.isLeafNode) {
+			System.out.println("Leaf");
+			System.out.println(startNode.keys);
 			// Search for the key and delete the key and the value from their lists respectively.
 			int position = startNode.keys.indexOf(key);
 			startNode.keys.remove(position);
@@ -257,7 +260,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			else {
 				while (iterator.hasNext()) {
 					if (iterator.next().compareTo(key) > 0) {
-						delete_position = iterator.previousIndex() + 1;
+						delete_position = iterator.previousIndex();
 						break;
 					}
 				}
@@ -272,7 +275,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				
 				if (delete_position == 0)
 					rightForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position + 1);
-				else if (delete_position == startNode.keys.size() - 1)
+				else if (delete_position == ((IndexNode)startNode).children.size() - 1)
 					leftForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position - 1);
 				else {
 					rightForBalance = (Node<K,T>)((IndexNode)startNode).children.get(delete_position + 1);
@@ -307,6 +310,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 						((IndexNode)startNode).children.remove(merge_splitkey);
 					}
 				}
+				// If startNode is the root and is empty, set its only child to be the new root.
+				if (startNode.keys.size() == 0)
+					root = (Node<K,T>)((IndexNode)startNode).children.get(0);
 			}
 		}
 		return startNode.isUnderflowed();
@@ -334,7 +340,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 		if (left_size + right_size >= 2 * D) {
 			// We need to know which node is to the left in the tree.
 			if (right.keys.get(0).compareTo(left.keys.get(0)) > 0) {
-				int index = parent.keys.indexOf(right.keys.get(0));
+				int index = parent.children.indexOf(right) - 1;
 				for (int i = 0; i < (D - left_size); i++) {
 					left.keys.add(right.keys.get(0));
 					right.keys.remove(0);
@@ -346,7 +352,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				return -1;
 			}
 			else {
-				int index = parent.keys.indexOf(left.keys.get(0));
+				int index = parent.children.indexOf(left) - 1;
 				for (int i = 0; i < (D - left_size); i++) {
 					left.keys.add(0, right.keys.get(right.keys.size() - 1));
 					right.keys.remove(right.keys.size() - 1);
@@ -360,6 +366,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 		}
 		// If redistribution is not possible, we need to merge the two nodes. Here we need to know the which node is to the left in the tree.
 		else {
+			System.out.println("Merge!");
 			if (right.keys.get(0).compareTo(left.keys.get(0)) > 0) {
 				for (int i = 0; i < right_size; i++) {
 					left.keys.add(right.keys.get(i));
@@ -369,17 +376,25 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				right.nextLeaf.previousLeaf = left;
 				left.nextLeaf = right.nextLeaf;
 				// Return the index of the key corresponding to the first key in the node to the right.
-				int index = parent.keys.indexOf(right.keys.get(0));
+				int index = parent.children.indexOf(right) - 1;
+				// Set the parent child pointer.			
+				parent.children.remove(index + 1);
+				parent.children.add(index + 1, left);
+				Utils.printTree(this);
+				
 				return index;
 			}
 			else {
+				
 				for (int i = 0; i < left_size; i++) {
 					right.keys.add(left.keys.get(i));
 					right.values.add(left.values.get(i));
 				}
 				left.nextLeaf.previousLeaf = right;
 				right.nextLeaf = left.nextLeaf;
-				int index = parent.keys.indexOf(left.keys.get(0));
+				int index = parent.children.indexOf(left) - 1;
+				parent.children.remove(index + 1);
+				parent.children.add(index + 1, right);
 				return index;
 			}			
 		}
@@ -475,6 +490,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 					leftIndex.keys.add(rightIndex.keys.get(j));
 					leftIndex.children.add(rightIndex.children.get(j));
 				}
+				leftIndex.children.add(rightIndex.children.get(rightIndex.children.size() - 1));
+				parent.children.remove(index + 1);
+				parent.children.add(index + 1, leftIndex);
 				return index;
 			}
 			else {
@@ -491,6 +509,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
 					rightIndex.keys.add(leftIndex.keys.get(j));
 					rightIndex.children.add(leftIndex.children.get(j));
 				}
+				rightIndex.children.add(leftIndex.children.get(leftIndex.children.size() - 1));
+				parent.children.remove(index + 1);
+				parent.children.add(index + 1, rightIndex);
 				return index;
 			}
 		}		
