@@ -303,6 +303,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				right.values.remove(0);
 			}
 			left.nextLeaf=right.nextLeaf;
+                        right.nextLeaf.previousLeaf=left;
 			right=null;
                         return pos;
 		}else{
