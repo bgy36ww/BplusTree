@@ -206,7 +206,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
                 i++;
             }
- 
+            
             if (N.isLeafNode){
             i--;
             if (key.compareTo((K)N.keys.get(i))==0){
@@ -226,7 +226,9 @@ public class BPlusTree<K extends Comparable<K>, T> {
             			Node1=((Node)((IndexNode)N).children.get(i-1));
             			size1=Node1.keys.size();
             		}
-            		if (i<N.keys.size()-1){
+                        int k=0;
+                        if (((Node)(((IndexNode)N).children.get(i))).isLeafNode){k=1;}
+            		if (i<N.keys.size()-k){
             			Node2=((Node)((IndexNode)N).children.get(i+1));
             			size2=Node2.keys.size();
             		}
@@ -238,6 +240,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             			}else{
             			pos=this.handleLeafNodeUnderflow((LeafNode)(((IndexNode)N).children.get(i)),(LeafNode)Secnode,(IndexNode)N);
             			}
+                                
             			if (pos!=-1){
                                     ((IndexNode)N).children.remove(pos+1);
                                     ((IndexNode)N).keys.remove(pos);
@@ -251,6 +254,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
             			}else{
             			pos=this.handleIndexNodeUnderflow((IndexNode)(((IndexNode)N).children.get(i)),(IndexNode)Secnode,(IndexNode)N);
             			}
+                                
                                 if (pos!=-1){
                                     ((IndexNode)N).children.remove(pos+1);
                                     ((IndexNode)N).keys.remove(pos);
@@ -281,10 +285,10 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 //position of the subnode in upper node
                 int pos=0;
                 //where should the transfer begin on right node
-                while ((pos<parent.keys.size())&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
+                while ((pos<parent.keys.size())&&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
                 pos++;
                 }
-                
+                pos--;
 		int l1=left.values.size();
 		int l2=right.values.size();
 		int p1=parent.keys.size();
@@ -345,8 +349,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			IndexNode<K,T> right, IndexNode<K,T> parent) {
                 int pos=0;
                 //where should the transfer begin on right node
-                while ((pos<parent.keys.size())&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
+                if (right!=null){
+                while ((pos<parent.keys.size())&&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
                 pos++;
+                }
+                pos--;
                 }
 		int l1=0;
                 if (left!=null){
@@ -372,10 +379,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
 			right=null;
                         return pos;
 		}else{
-                        
-
-
-                        
                         if (l2>l1){
 			int numtomove=D-l1;
 			for (int i=0;i<numtomove;i++){
