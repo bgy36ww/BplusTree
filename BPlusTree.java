@@ -364,8 +364,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                     l2=right.keys.size();
                 }
 		if (l1+l2<2*D){
-			K tkey=parent.keys.get(pos);
-			left.keys.add(tkey);
+			left.keys.add(parent.keys.get(pos));
 			for (int i=0;i<l2;i++){
 				left.keys.add(right.keys.get(0));
 				right.keys.remove(0);
@@ -380,6 +379,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                         return pos;
 		}else{
                         if (l2>l1){
+                        left.keys.add(parent.keys.get(pos));
 			int numtomove=D-l1;
 			for (int i=0;i<numtomove;i++){
 				left.keys.add(right.keys.get(0));
@@ -387,8 +387,12 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				left.children.add(right.children.get(0));
 				right.children.remove(0);
 			}
+                        parent.keys.remove(pos);
+			parent.keys.add(pos,left.keys.get(left.keys.size()));
+                        left.keys.remove(left.keys.size());
                         }
                         else{
+                        right.keys.add(0,parent.keys.get(pos));
                         int numtomove=D-l2;
                         for (int i=0;i<numtomove;i++){
 				right.keys.add(0,left.keys.get(left.keys.size()-1));
@@ -396,9 +400,11 @@ public class BPlusTree<K extends Comparable<K>, T> {
 				right.children.add(0,left.children.get(left.children.size()-1));
 				left.children.remove(left.children.size()-1);
 			}    
-                                }
                         parent.keys.remove(pos);
 			parent.keys.add(pos,right.keys.get(0));
+                        right.keys.remove(0);
+                                }
+
                         return -1;
                         
 		}
