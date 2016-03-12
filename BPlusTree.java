@@ -307,7 +307,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 else return mid;
                 
             }
-            return -1;
+            return s;
             
         }
 	/**
