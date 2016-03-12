@@ -15,13 +15,7 @@ public class Teststructure {
     
         BPlusTree BT=new BPlusTree();
        Tests t1=new Tests();
-       t1.testLargeTree();
-       BT.insert(1, "2");
-       BT.insert(2, "2");
-       BT.insert(3, "2");
-       BT.insert(4, "2");
-       BT.insert(5, "2");
-       BT.insert(6, "2");
+       t1.testSimpleHybrid2();
       
        
         
