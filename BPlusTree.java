@@ -219,9 +219,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
         public boolean recdelete(K key, Node N){
             int i=0;
             //find the position to delete
-            while ((i<N.keys.size())&&(key.compareTo((K)N.keys.get(i))>=0)){
-                i++;
-            }
+            i=this.binarysearch(N.keys, key);
             //help on leafnode
             if (N.isLeafNode){
             i--;
@@ -292,6 +290,26 @@ public class BPlusTree<K extends Comparable<K>, T> {
             return N.isUnderflowed();
         }
 
+        //search tree for finding the right node
+        public int binarysearch(ArrayList<K> keys, K dkey ){
+            int s=0;
+            int ed=keys.size()-1;
+            if (dkey.compareTo(keys.get(s))<0){
+                return s;
+            }else if (dkey.compareTo(keys.get(ed))>=0){
+                return ed;
+            }
+            while (s<=ed){
+                //key is inside s and ed
+                int mid= s+(ed-s)/2;
+                if (dkey.compareTo(keys.get(mid))<0) ed=mid-1;
+                else if (dkey.compareTo(keys.get(mid))>0) s=mid+1;
+                else return mid;
+                
+            }
+            return -1;
+            
+        }
 	/**
 	 * TODO Handle LeafNode Underflow (merge or redistribution)
 	 * 
@@ -304,15 +322,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
 	 * @return the splitkey position in parent if merged so that parent can
 	 *         delete the splitkey later on. -1 otherwise
 	 */
+        
 
+        
 	public int handleLeafNodeUnderflow(LeafNode<K,T> left, LeafNode<K,T> right,
 			IndexNode<K,T> parent) {
                 //position of the subnode in upper node
-                int pos=0;
+                int pos;
                 //where should the transfer begin on right node
-                while ((pos<parent.keys.size())&&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
-                pos++;
-                }
+                pos=this.binarysearch(parent.keys, right.keys.get(0));
                 pos--;
                 //take record of three nodes properties for later uses
 		int l1=left.values.size();
@@ -380,9 +398,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 int pos=0;
                 //where should the transfer begin on right node
                 if (right!=null){
-                while ((pos<parent.keys.size())&&((right.keys.get(0)).compareTo((K)parent.keys.get(pos))>=0)){
-                pos++;
-                }
+                pos=this.binarysearch(parent.keys, right.keys.get(0));
                 pos--;
                 }
 		int l1=0;
